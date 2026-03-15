@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foto Vergroter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a6fd4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 20px 48px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      opacity: 0.8;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    /* ── STEP CARD ── */
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+
+    /* ── UPLOAD AREA ── */
+    .upload-area {
+      width: 100%;
+      border: 3px dashed #c0d8f5;
+      border-radius: 20px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      background: #eef6ff;
+      border-color: #1a6fd4;
+    }
+
+    .upload-icon {
+      width: 72px;
+      height: 72px;
+      background: #e8f2ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .upload-icon svg {
+      width: 36px;
+      height: 36px;
+      stroke: #1a6fd4;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .upload-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a3a5c;
+    }
+
+    .upload-hint {
+      font-size: 14px;
+      color: #7a99b8;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* ── PREVIEW ── */
+    .preview-wrap {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #f0f4f8;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .file-name {
+      font-size: 14px;
+      color: #7a99b8;
+      text-align: center;
+      word-break: break-all;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      width: 100%;
+      padding: 20px;
+      border: none;
+      border-radius: 18px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: #1a6fd4;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(26,111,212,0.4);
+    }
+
+    .btn-primary:hover {
+      background: #155db8;
+    }
+
+    .btn-success {
+      background: #18b86e;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(24,184,110,0.4);
+    }
+
+    .btn-success:hover {
+      background: #139c5c;
+    }
+
+    .btn-ghost {
+      background: #eef3f9;
+      color: #1a6fd4;
+      box-shadow: none;
+      font-size: 17px;
+    }
+
+    .btn-ghost:hover {
+      background: #dde8f5;
+    }
+
+    /* ── PROGRESS ── */
+    .progress-wrap {
+      width: 100%;
+    }
+
+    .progress-label {
+      font-size: 15px;
+      color: #7a99b8;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #e8f0f8;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a6fd4, #3fa0ff);
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* ── RESULT ── */
+    .result-icon {
+      width: 80px;
+      height: 80px;
+      background: #e6f9f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-icon svg {
+      width: 44px;
+      height: 44px;
+      stroke: #18b86e;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a3a5c;
+      text-align: center;
+    }
+
+    .result-info {
+      font-size: 14px;
+      color: #7a99b8;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ── HIDDEN ── */
+    .hidden {
+      display: none !important;
+    }
+
+    /* ── STEP INDICATORS ── */
+    .steps {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      align-items: center;
+    }
+
+    .step-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .step-dot.active {
+      background: #fff;
+      transform: scale(1.3);
+    }
+
+    .step-dot.done {
+      background: rgba(255,255,255,0.7);
+    }
+
+    canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Foto Vergroter</h1>
+  <p class="subtitle">Vergroot elke foto naar 4K (3840×2160)</p>
+
+  <div class="steps">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 1: Upload -->
+    <div id="step1">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <span class="upload-label">Tik om een foto te kiezen</span>
+        <span class="upload-hint">JPG, PNG of WEBP</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" />
+    </div>
+
+    <!-- STEP 2: Preview + Convert -->
+    <div id="step2" class="hidden">
+      <div class="preview-wrap">
+        <img id="previewImg" src="" alt="Voorbeeld" />
+      </div>
+      <p class="file-name" id="fileName"></p>
+      <button class="btn btn-primary" id="convertBtn">Omzetten naar 4K</button>
+      <button class="btn btn-ghost" id="changeBtn">Andere foto kiezen</button>
+    </div>
+
+    <!-- STEP 3: Converting -->
+    <div id="step3" class="hidden">
+      <div class="progress-wrap">
+        <p class="progress-label" id="progressLabel">Bezig met omzetten…</p>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Done -->
+    <div id="step4" class="hidden">
+      <div class="result-icon">
+        <svg viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <p class="result-title">Klaar!</p>
+      <p class="result-info" id="resultInfo">Uw foto is omgezet naar 3840×2160</p>
+      <button class="btn btn-success" id="downloadBtn">Download foto</button>
+      <button class="btn btn-ghost" id="againBtn">Nieuwe foto omzetten</button>
+    </div>
+
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const fileInput   = document.getElementById('fileInput');
+    const uploadArea  = document.getElementById('uploadArea');
+    const previewImg  = document.getElementById('previewImg');
+    const fileName    = document.getElementById('fileName');
+    const convertBtn  = document.getElementById('convertBtn');
+    const changeBtn   = document.getElementById('changeBtn');
+    const progressFill= document.getElementById('progressFill');
+    const progressLabel=document.getElementById('progressLabel');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const againBtn    = document.getElementById('againBtn');
+    const resultInfo  = document.getElementById('resultInfo');
+    const canvas      = document.getElementById('canvas');
+    const ctx         = canvas.getContext('2d');
+
+    const TARGET_W = 3840;
+    const TARGET_H = 2160;
+
+    let outputBlob = null;
+    let outputFileName = 'foto-4k.jpg';
+
+    // ── Step helpers ──────────────────────────────────────────
+    function showStep(n) {
+      [1,2,3,4].forEach(i => {
+        document.getElementById('step' + i).classList.toggle('hidden', i !== n);
+      });
+      [1,2,3].forEach(i => {
+        const dot = document.getElementById('dot' + i);
+        const stepMap = { 1: 1, 2: 2, 3: 3, 4: 3 };
+        dot.className = 'step-dot' + (stepMap[n] === i ? ' active' : stepMap[n] > i ? ' done' : '');
+      });
+    }
+
+    // ── File selection ────────────────────────────────────────
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) return alert('Kies een afbeeldingsbestand (JPG, PNG of WEBP).');
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        fileName.textContent = file.name;
+        outputFileName = file.name.replace(/\.[^.]+$/, '') + '-4k.jpg';
+        showStep(2);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    changeBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      showStep(1);
+    });
+
+    // ── Convert ───────────────────────────────────────────────
+    convertBtn.addEventListener('click', () => {
+      showStep(3);
+      animateProgress(0, 40, 300, () => {
+        const img = new Image();
+        img.onload = () => {
+          animateProgress(40, 70, 200, () => {
+            canvas.width  = TARGET_W;
+            canvas.height = TARGET_H;
+
+            // Fill background white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, TARGET_W, TARGET_H);
+
+            // Scale to contain (centered, no stretch)
+            const scale = Math.min(TARGET_W / img.naturalWidth, TARGET_H / img.naturalHeight);
+            const dw = img.naturalWidth  * scale;
+            const dh = img.naturalHeight * scale;
+            const dx = (TARGET_W - dw) / 2;
+            const dy = (TARGET_H - dh) / 2;
+
+            ctx.drawImage(img, dx, dy, dw, dh);
+
+            animateProgress(70, 95, 300, () => {
+              canvas.toBlob(blob => {
+                outputBlob = blob;
+                const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                resultInfo.textContent = `3840×2160 pixels · ${sizeMB} MB`;
+                animateProgress(95, 100, 150, () => showStep(4));
+              }, 'image/jpeg', 0.95);
+            });
+          });
+        };
+        img.src = previewImg.src;
+      });
+    });
+
+    function animateProgress(from, to, duration, callback) {
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min((now - start) / duration, 1);
+        const val = from + (to - from) * easeOut(t);
+        progressFill.style.width = val + '%';
+        progressLabel.textContent = Math.round(val) < 100 ? 'Bezig met omzetten…' : 'Bijna klaar…';
+        if (t < 1) requestAnimationFrame(tick);
+        else if (callback) callback();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 2); }
+
+    // ── Download ──────────────────────────────────────────────
+    downloadBtn.addEventListener('click', () => {
+      if (!outputBlob) return;
+      const url = URL.createObjectURL(outputBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = outputFileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Again ─────────────────────────────────────────────────
+    againBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      outputBlob = null;
+      progressFill.style.width = '0%';
+      showStep(1);
+    });
+  </script>
+</body>
+</html>
