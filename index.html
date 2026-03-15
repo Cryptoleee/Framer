@@ -423,12 +423,8 @@
             canvas.width  = TARGET_W;
             canvas.height = TARGET_H;
 
-            // Fill background white
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, TARGET_W, TARGET_H);
-
-            // Scale to contain (centered, no stretch)
-            const scale = Math.min(TARGET_W / img.naturalWidth, TARGET_H / img.naturalHeight);
+            // Scale to cover (centered crop, no stretch, no borders)
+            const scale = Math.max(TARGET_W / img.naturalWidth, TARGET_H / img.naturalHeight);
             const dw = img.naturalWidth  * scale;
             const dh = img.naturalHeight * scale;
             const dx = (TARGET_W - dw) / 2;
